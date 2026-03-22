@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC Word Scramble - Topic 27</title>
+    <style>
+        :root { --primary: #1e40af; --secondary: #3b82f6; --success: #10b981; --danger: #ef4444; --bg: #f0f4ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .game-card { background: white; width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px; text-align: center; }
+        .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progress { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+        .scrambled-word { font-size: 32px; font-weight: 800; color: var(--primary); letter-spacing: 5px; margin: 20px 0; text-transform: uppercase; background: #eff6ff; padding: 15px; border-radius: 10px; border: 2px dashed var(--secondary); }
+        .hint { color: #64748b; font-style: italic; margin-bottom: 10px; font-size: 14px; }
+        .meaning { font-size: 20px; font-weight: 600; color: #1e293b; margin-bottom: 20px; }
+        input { padding: 15px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .btn-check { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-check:hover { background: #1e3a8a; }
+        .message { margin-top: 15px; font-weight: bold; min-height: 24px; }
+        .correct { color: var(--success); }
+        .wrong { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="game-card" id="game-container">
+    <div class="progress-bar"><div id="progress"></div></div>
+    <div class="hint" id="pos-hint">LOẠI TỪ</div>
+    <div class="meaning" id="vietnamese-meaning">NGHĨA TIẾNG VIỆT</div>
+    <div class="scrambled-word" id="scrambled">WORD</div>
+    
+    <input type="text" id="user-input" placeholder="Nhập từ đúng tại đây..." autocomplete="off">
+    <button class="btn-check" onclick="checkAnswer()">KIỂM TRA</button>
+    <div class="message" id="message"></div>
+    
+    <div style="margin-top: 20px; color: #94a3b8; font-size: 13px;">
+        Câu: <span id="current-idx">1</span>/12
+    </div>
+</div>
+
+<script>
+    const boardMeetingData = [
+        { w: "Adhere", m: "Tuân thủ, tham gia", p: "Verb" },
+        { w: "Agenda", m: "Chương trình nghị sự", p: "Noun" },
+        { w: "Bring up", m: "Đưa ra (một vấn đề)", p: "Verb Phrase" },
+        { w: "Conclude", m: "Kết luận, kết thúc", p: "Verb" },
+        { w: "Go over", m: "Kiểm tra, xem xét kỹ", p: "Verb Phrase" },
+        { w: "Period", vi: "Giai đoạn, thời kỳ", p: "Noun" },
+        { w: "Priority", m: "Sự ưu tiên", p: "Noun" },
+        { w: "Progress", m: "Sự tiến bộ, tiến triển", p: "Noun" },
+        { w: "Waste", m: "Lãng phí", p: "Verb/Noun" },
+        { w: "Matter", m: "Vấn đề, việc", p: "Noun" },
+        { m: "Mục tiêu", w: "Objective", p: "Noun" },
+        { m: "Thành lập, thiết lập", w: "Establish", p: "Verb" }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    function scramble(word) {
+        let arr = word.toUpperCase().split("");
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        if (arr.join("") === word.toUpperCase()) return scramble(word); // Đảm bảo không trùng từ gốc
+        return arr.join("");
+    }
+
+    function render() {
+        if (currentIdx >= boardMeetingData.length) {
+            document.getElementById('game-container').innerHTML = `
+                <h2 style="color: var(--success)">Xuất sắc!</h2>
+                <p>Bạn đã hoàn thành Chủ đề 27: Board Meetings</p>
+                <button onclick="location.reload()" class="btn-check">Chơi lại</button>`;
+            return;
+        }
+
+        const data = boardMeetingData[currentIdx];
+        document.getElementById('pos-hint').innerText = `Loại từ: ${data.p}`;
+        document.getElementById('vietnamese-meaning').innerText = data.m;
+        document.getElementById('scrambled').innerText = scramble(data.w.replace(/\s/g, "")); // Xóa khoảng trắng khi scramble
+        document.getElementById('user-input').value = "";
+        document.getElementById('message').innerText = "";
+        document.getElementById('current-idx').innerText = currentIdx + 1;
+        document.getElementById('progress').style.width = `${(currentIdx / 12) * 100}%`;
+    }
+
+    function checkAnswer() {
+        const input = document.getElementById('user-input').value.trim().toLowerCase();
+        const correctWord = boardMeetingData[currentIdx].w.toLowerCase().replace(/\s/g, "");
+        const msg = document.getElementById('message');
+
+        if (input === correctWord) {
+            msg.innerText = "Chính xác! Đang chuyển câu...";
+            msg.className = "message correct";
+            currentIdx++;
+            setTimeout(render, 1000);
+        } else {
+            msg.innerText = "Chưa đúng, thử lại nhé!";
+            msg.className = "message wrong";
+        }
+    }
+
+    // Cho phép nhấn Enter để kiểm tra
+    document.getElementById('user-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') checkAnswer();
+    });
+
+    render();
+</script>
+</body>
+</html>
